@@ -79,10 +79,21 @@ namespace Sitecore.Support.Marketing.xMgmt.Pipelines.DeployDefinition
                 {
                     throw new InvalidOperationException(string.Format("Unknown definition template id '{0}'", expectedTemplateId));
                 }
-                if (!source.Any((Guid c) => itemTemplate.InheritsFrom(c.ToID())) && !this._deploymentManager.DeployAsync<TDefinition>(item.ID.Guid, item.Language.CultureInfo).Wait(TimeSpan.FromSeconds(30.0)))
-                {
-                    throw new TimeoutException(string.Format("Save operation for definition id:[{0}] could not be completed within specified timeframe. It will be re-run in the background.", item.ID));
-                }
+
+              #region Sitecore.Support.81838
+
+                //if (!source.Any((Guid c) => itemTemplate.InheritsFrom(c.ToID())) && !this._deploymentManager.DeployAsync<TDefinition>(item.ID.Guid, item.Language.CultureInfo).Wait(TimeSpan.FromSeconds(30.0)))
+                //{
+                //throw new TimeoutException(string.Format("Save operation for definition id:[{0}] could not be completed within specified timeframe. It will be re-run in the background.", item.ID));
+                //}
+
+
+                if (!source.Any((Guid c) => itemTemplate.InheritsFrom(c.ToID())) && !this._deploymentManager.DeployAsync<TDefinition>(item.ID.Guid, item.Language.CultureInfo).Wait(TimeSpan.Parse(
+                   Sitecore.Configuration.Settings.GetSetting("DefinitionDeploy.Timeout", String.Empty))))
+                    {
+                        throw new TimeoutException(string.Format("Save operation for definition id:[{0}] could not be completed within specified timeframe. It will be re-run in the background.",item.ID));
+                    }
+              #endregion
             }
         }
     }
