@@ -51,7 +51,10 @@ namespace Sitecore.Support.Marketing.xMgmt.Pipelines.DeployDefinition
             Condition.Requires<DeployDefinitionArgs>(args, "args").IsNotNull<DeployDefinitionArgs>();
             Item item = args.Item;
             Template template = this._templateManager.GetTemplate(item);
-            Dictionary<Guid, HashSet<Guid>> templatesInheritanceDictionary = this._templateManager.GetTemplatesInheritanceDictionary(item.Database, Sitecore.Marketing.Definitions.WellKnownIdentifiers.MarketingDefinition.DefinitionTemplateIds);
+            Assembly assembly = Assembly.LoadFile(Sitecore.IO.FileUtil.MapPath("/bin/Sitecore.Marketing.xMgmt.dll"));
+            Type type = assembly.GetType("Sitecore.Marketing.xMgmt.Extensions.BaseTemplateManagerExtensions");
+            object getTemplatesInheritanceDictionaryMethodInvoke = type.GetMethod("GetTemplatesInheritanceDictionary").Invoke(this, new object[] { this._templateManager, item.Database, Sitecore.Marketing.Definitions.WellKnownIdentifiers.MarketingDefinition.DefinitionTemplateIds });
+            Dictionary<Guid, HashSet<Guid>> templatesInheritanceDictionary = getTemplatesInheritanceDictionaryMethodInvoke as Dictionary<Guid, HashSet<Guid>>;
             this.DeployItem<IAutomationPlanDefinition>(item, template, Sitecore.Marketing.Definitions.AutomationPlans.WellKnownIdentifiers.PlanDefinitionTemplateId, templatesInheritanceDictionary);
             this.DeployItem<ICampaignActivityDefinition>(item, template, Sitecore.Marketing.Definitions.Campaigns.WellKnownIdentifiers.CampaignActivityDefinitionTemplateId, templatesInheritanceDictionary);
             this.DeployItem<IEventDefinition>(item, template, Sitecore.Marketing.Definitions.Events.WellKnownIdentifiers.EventDefinitionTemplateId, templatesInheritanceDictionary);
